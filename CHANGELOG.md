@@ -1,3 +1,8 @@
+## 1.0.4
+
+* Feature: Comprehensive State Management Integration guides (Plain Flutter/ChangeNotifier, ValueListenableBuilder, BLoC, Cubit, Provider, Riverpod, GetX).
+* Documentation: Added State Management Comparison Table and Patient Directory integration examples using real controller APIs.
+
 ## 1.0.3
 
 * Feature: Enhanced pub.dev documentation featuring high-resolution feature showcase banner.

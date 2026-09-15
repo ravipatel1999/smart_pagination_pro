@@ -56,7 +56,7 @@ Add `smart_pagination_pro` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  smart_pagination_pro: ^1.0.3
+  smart_pagination_pro: ^1.0.4
 ```
 
 ---
