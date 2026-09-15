@@ -304,27 +304,489 @@ Smart Pagination Pro manages all standard asynchronous state transitions:
 
 ## 🏗️ State Management Integration
 
-`smart_pagination_pro` does not enforce BLoC, Provider, Riverpod, or GetX. `SmartPaginationController<T>` extends Flutter's `ChangeNotifier` and implements `ValueListenable<SmartPaginationState<T>>`.
+`smart_pagination_pro` is completely state-management agnostic. It does not enforce any third-party framework such as BLoC, Cubit, Provider, Riverpod, or GetX.
 
-### BLoC / Cubit Integration Example
+Because `SmartPaginationController<T>` extends Flutter's built-in `ChangeNotifier` and implements `ValueListenable<SmartPaginationState<T>>`, it seamlessly integrates with any Flutter state management solution or works zero-dependency out of the box.
+
+> [!NOTE]
+> Packages like `flutter_bloc`, `provider`, `flutter_riverpod`, and `get` are application-level state management libraries. They are **not** dependencies of `smart_pagination_pro`. `smart_pagination_pro` remains completely zero-dependency for state management.
+
+---
+
+### 📊 State Management Comparison Table
+
+| Architecture / Library | External Dependency | Best Use Case | Setup Complexity |
+|---|---|---|---|
+| **Plain `StatefulWidget` / `ChangeNotifier`** | None (Built-in) | Simple apps, quick prototypes, component-level lists | Low ⚡ |
+| **`ValueListenableBuilder`** | None (Built-in) | Direct reactive UI rebuilding without external state containers | Lowest ⚡⚡ |
+| **BLoC (`flutter_bloc`)** | `flutter_bloc` | Strict event-driven enterprise architecture & team workflows | Medium 🛠️ |
+| **Cubit (`flutter_bloc`)** | `flutter_bloc` | Method-based state management with predictable state streams | Low/Medium 🛠️ |
+| **Provider (`provider`)** | `provider` | Standard Flutter dependency injection & scoped controllers | Low ⚡ |
+| **Riverpod (`flutter_riverpod`)** | `flutter_riverpod` | Modern compile-safe dependency injection & global scope | Low/Medium ⚡ |
+| **GetX (`get`)** | `get` | Fast route/state binding with minimal boilerplate | Low ⚡ |
+
+---
+
+### 1. Plain Flutter / `ChangeNotifier` (Zero Dependency)
+
+The simplest approach using a standard `StatefulWidget`. Pass `controller` directly to `SmartPaginatedList`. `SmartPaginatedList` automatically listens to controller notifications and rebuilds when state changes.
 
 ```dart
-class PatientCubit extends Cubit<SmartPaginationState<Patient>> {
-  PatientCubit(this.api) : super(SmartPaginationState.initial(initialPage: 1, initialOffset: 0, pageSize: 20)) {
+import 'package:flutter/material.dart';
+import 'package:smart_pagination_pro/smart_pagination_pro.dart';
+
+class Patient {
+  final String id;
+  final String name;
+  final String department;
+
+  const Patient({
+    required this.id,
+    required this.name,
+    required this.department,
+  });
+}
+
+class PatientListView extends StatefulWidget {
+  const PatientListView({super.key});
+
+  @override
+  State<PatientListView> createState() => _PatientListViewState();
+}
+
+class _PatientListViewState extends State<PatientListView> {
+  late final SmartPaginationController<Patient> controller;
+
+  @override
+  void initState() {
+    super.initState();
     controller = SmartPaginationController<Patient>(
       pageSize: 20,
-      fetch: (req) => api.fetchPatients(req),
-      onStateChanged: (newState) => emit(newState),
+      strategy: PaginationStrategy.page,
+      fetch: (request) async {
+        final response = await patientApi.getPatients(
+          page: request.page,
+          limit: request.pageSize,
+          search: request.search,
+          department: request.filters['department'],
+        );
+        return SmartPageResult(
+          items: response.items,
+          totalItems: response.total,
+        );
+      },
     );
+    controller.loadInitial();
   }
 
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            decoration: const InputDecoration(
+              hintText: 'Search patients...',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: controller.search,
+          ),
+        ),
+        Expanded(
+          child: SmartPaginatedList<Patient>(
+            controller: controller,
+            showShimmer: true,
+            itemBuilder: (context, patient, index) {
+              return ListTile(
+                title: Text(patient.name),
+                subtitle: Text(patient.department),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+---
+
+### 2. `ValueListenableBuilder` (Zero Dependency Reactive UI)
+
+Since `SmartPaginationController<T>` implements `ValueListenable<SmartPaginationState<T>>`, you can build completely reactive custom headers, counters, or total record indicators without importing any state management packages:
+
+```dart
+class PatientHeaderWidget extends StatelessWidget {
+  final SmartPaginationController<Patient> controller;
+
+  const PatientHeaderWidget({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<SmartPaginationState<Patient>>(
+      valueListenable: controller,
+      builder: (context, state, child) {
+        if (state.isLoading) {
+          return const Text('Loading patients...');
+        }
+        return Text(
+          'Showing ${state.items.length} of ${state.totalItems ?? 'many'} patients',
+          style: Theme.of(context).textTheme.titleSmall,
+        );
+      },
+    );
+  }
+}
+```
+
+---
+
+### 3. BLoC Integration (`flutter_bloc`)
+
+In BLoC pattern, map UI user actions to Events and emit new pagination states using `SmartPaginationController`.
+
+```dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_pagination_pro/smart_pagination_pro.dart';
+
+// --- Events ---
+abstract class PatientEvent {}
+
+class LoadPatientsRequested extends PatientEvent {}
+class SearchPatientsQueryChanged extends PatientEvent {
+  final String query;
+  SearchPatientsQueryChanged(this.query);
+}
+class FilterPatientDepartmentChanged extends PatientEvent {
+  final String? department;
+  FilterPatientDepartmentChanged(this.department);
+}
+class RefreshPatientsRequested extends PatientEvent {}
+
+// --- BLoC ---
+class PatientBloc extends Bloc<PatientEvent, SmartPaginationState<Patient>> {
   final PatientApi api;
   late final SmartPaginationController<Patient> controller;
+
+  PatientBloc({required this.api})
+      : super(SmartPaginationState<Patient>.initial()) {
+    controller = SmartPaginationController<Patient>(
+      pageSize: 20,
+      fetch: (request) async {
+        final res = await api.getPatients(
+          page: request.page,
+          limit: request.pageSize,
+          search: request.search,
+          department: request.filters['department'],
+        );
+        return SmartPageResult(items: res.items, totalItems: res.total);
+      },
+      onStateChanged: (newState) => add(_PaginationStateUpdated(newState)),
+    );
+
+    on<_PaginationStateUpdated>((event, emit) => emit(event.state));
+    on<LoadPatientsRequested>((event, emit) => controller.loadInitial());
+    on<SearchPatientsQueryChanged>((event, emit) => controller.search(event.query));
+    on<FilterPatientDepartmentChanged>((event, emit) => controller.setFilter('department', event.department));
+    on<RefreshPatientsRequested>((event, emit) => controller.refresh());
+  }
 
   @override
   Future<void> close() {
     controller.dispose();
     return super.close();
+  }
+}
+
+class _PaginationStateUpdated extends PatientEvent {
+  final SmartPaginationState<Patient> state;
+  _PaginationStateUpdated(this.state);
+}
+
+// --- UI View ---
+class PatientBlocView extends StatelessWidget {
+  const PatientBlocView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PatientBloc, SmartPaginationState<Patient>>(
+      builder: (context, state) {
+        final bloc = context.read<PatientBloc>();
+        return Column(
+          children: [
+            TextField(
+              onChanged: (q) => bloc.add(SearchPatientsQueryChanged(q)),
+            ),
+            Expanded(
+              child: SmartPaginatedList<Patient>(
+                controller: bloc.controller,
+                itemBuilder: (context, patient, index) {
+                  return ListTile(title: Text(patient.name));
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+```
+
+---
+
+### 4. Cubit Integration (`flutter_bloc`)
+
+Using `Cubit` simplifies event mapping. Forward controller state changes via `onStateChanged`:
+
+```dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_pagination_pro/smart_pagination_pro.dart';
+
+class PatientCubit extends Cubit<SmartPaginationState<Patient>> {
+  final PatientApi api;
+  late final SmartPaginationController<Patient> controller;
+
+  PatientCubit({required this.api})
+      : super(SmartPaginationState<Patient>.initial()) {
+    controller = SmartPaginationController<Patient>(
+      pageSize: 20,
+      fetch: (request) async {
+        final res = await api.getPatients(
+          page: request.page,
+          limit: request.pageSize,
+          search: request.search,
+          department: request.filters['department'],
+        );
+        return SmartPageResult(items: res.items, totalItems: res.total);
+      },
+      onStateChanged: (newState) => emit(newState),
+    );
+    controller.loadInitial();
+  }
+
+  void search(String query) => controller.search(query);
+  void filterDepartment(String? dept) => controller.setFilter('department', dept);
+  void refresh() => controller.refresh();
+
+  @override
+  Future<void> close() {
+    controller.dispose();
+    return super.close();
+  }
+}
+
+class PatientCubitView extends StatelessWidget {
+  const PatientCubitView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PatientCubit, SmartPaginationState<Patient>>(
+      builder: (context, state) {
+        final cubit = context.read<PatientCubit>();
+        return SmartPaginatedList<Patient>(
+          controller: cubit.controller,
+          itemBuilder: (context, patient, index) {
+            return ListTile(
+              title: Text(patient.name),
+              subtitle: Text(patient.department),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+---
+
+### 5. Provider Integration (`provider`)
+
+Provide `SmartPaginationController<T>` directly through `ChangeNotifierProvider`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smart_pagination_pro/smart_pagination_pro.dart';
+
+class PatientProviderScreen extends StatelessWidget {
+  const PatientProviderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<SmartPaginationController<Patient>>(
+      create: (_) => SmartPaginationController<Patient>(
+        pageSize: 20,
+        fetch: (request) async {
+          final res = await patientApi.getPatients(
+            page: request.page,
+            limit: request.pageSize,
+            search: request.search,
+          );
+          return SmartPageResult(items: res.items, totalItems: res.total);
+        },
+      )..loadInitial(),
+      child: Consumer<SmartPaginationController<Patient>>(
+        builder: (context, controller, child) {
+          return Column(
+            children: [
+              TextField(
+                onChanged: controller.search,
+                decoration: const InputDecoration(hintText: 'Search...'),
+              ),
+              Expanded(
+                child: SmartPaginatedList<Patient>(
+                  controller: controller,
+                  itemBuilder: (context, patient, index) {
+                    return ListTile(title: Text(patient.name));
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+### 6. Riverpod Integration (`flutter_riverpod`)
+
+Create a Riverpod `ChangeNotifierProvider` for `SmartPaginationController<Patient>`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_pagination_pro/smart_pagination_pro.dart';
+
+final patientPaginationProvider = ChangeNotifierProvider.autoDispose<SmartPaginationController<Patient>>((ref) {
+  final controller = SmartPaginationController<Patient>(
+    pageSize: 20,
+    fetch: (request) async {
+      final res = await patientApi.getPatients(
+        page: request.page,
+        limit: request.pageSize,
+        search: request.search,
+      );
+      return SmartPageResult(items: res.items, totalItems: res.total);
+    },
+  );
+  controller.loadInitial();
+  return controller;
+});
+
+class PatientRiverpodWidget extends ConsumerWidget {
+  const PatientRiverpodWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.watch(patientPaginationProvider);
+
+    return Column(
+      children: [
+        TextField(
+          onChanged: (query) => ref.read(patientPaginationProvider).search(query),
+          decoration: const InputDecoration(hintText: 'Search patients...'),
+        ),
+        Expanded(
+          child: SmartPaginatedList<Patient>(
+            controller: controller,
+            itemBuilder: (context, patient, index) {
+              return ListTile(
+                title: Text(patient.name),
+                subtitle: Text(patient.department),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+---
+
+### 7. GetX Integration (`get`)
+
+Wrap `SmartPaginationController` inside a `GetxController`:
+
+```dart
+import 'package:get/get.dart';
+import 'package:smart_pagination_pro/smart_pagination_pro.dart';
+
+class PatientGetXController extends GetxController {
+  final PatientApi api;
+  late final SmartPaginationController<Patient> paginationController;
+
+  PatientGetXController({required this.api});
+
+  @override
+  void onInit() {
+    super.onInit();
+    paginationController = SmartPaginationController<Patient>(
+      pageSize: 20,
+      fetch: (request) async {
+        final res = await api.getPatients(
+          page: request.page,
+          limit: request.pageSize,
+          search: request.search,
+        );
+        return SmartPageResult(items: res.items, totalItems: res.total);
+      },
+      onStateChanged: (_) => update(), // Trigger GetBuilder update
+    );
+    paginationController.loadInitial();
+  }
+
+  void search(String query) => paginationController.search(query);
+  void refresh() => paginationController.refresh();
+
+  @override
+  void onClose() {
+    paginationController.dispose();
+    super.onClose();
+  }
+}
+
+class PatientGetXView extends StatelessWidget {
+  const PatientGetXView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<PatientGetXController>(
+      init: PatientGetXController(api: patientApi),
+      builder: (controller) {
+        return Column(
+          children: [
+            TextField(
+              onChanged: controller.search,
+              decoration: const InputDecoration(hintText: 'Search patients...'),
+            ),
+            Expanded(
+              child: SmartPaginatedList<Patient>(
+                controller: controller.paginationController,
+                itemBuilder: (context, patient, index) {
+                  return ListTile(title: Text(patient.name));
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 ```
