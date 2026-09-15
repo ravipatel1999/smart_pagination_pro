@@ -33,5 +33,3 @@ topics:
   - scroll-pagination
   - load-more
   - api-pagination
-  - cursor-pagination
-  - offset-pagination
