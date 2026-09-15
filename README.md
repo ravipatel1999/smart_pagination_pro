@@ -1,27 +1,42 @@
-# Smart Pagination Pro (`smart_pagination_pro`)
+# Smart Pagination Pro (`smart_pagination_pro`) 🚀
 
-🚀 **Production-grade, highly configurable, zero-external-dependency Flutter pagination framework.**
+A production-ready Flutter pagination package with **Infinite Scroll, Scroll Pagination, Load More, API Pagination, Search, Filters, Sorting, Refresh, and Cursor/Offset/Page-based pagination**.
+
+Build fast and reliable paginated lists and grids without implementing pagination logic from scratch.
 
 Designed for real-world enterprise Flutter applications. Supports **Page**, **Offset**, and **Cursor** pagination strategies across any async data source (REST APIs, GraphQL, Firebase, SQLite, Isar, etc.) and integrates seamlessly with BLoC, Riverpod, Provider, GetX, or standard Flutter state management.
 
 ---
 
-## Key Features
+## ✨ Features
 
-* ⚡ **3 Pagination Strategies**: Page-based (`?page=1`), Offset-based (`?offset=20`), and Cursor-based (`?cursor=xyz`).
-* 📱 **Infinite Scroll & Prefetching**: Automatic background page prefetching based on configurable threshold (`prefetchDistance: 500`).
-* 🛡️ **Race-Condition & Stale Response Safety**: Query generation token tracking ensures out-of-order API responses never overwrite newer data.
-* 🔍 **Search Debouncing**: Built-in timer debouncer (`searchDebounceDuration`) with automatic pagination reset.
-* 🎛️ **Filtering & Sorting**: Multi-filter management (`setFilter`, `setFilters`) and sorting (`SmartSort`).
-* 🔒 **Request Deduplication**: Prevents duplicate concurrent API requests for identical pagination keys.
-* ✨ **Built-In Lightweight Shimmer**: Zero-dependency customizable skeleton shimmer animation (`SmartShimmer`, `showShimmer: true`).
-* 📐 **Responsive Material 3 UI**: Adaptive widgets (`SmartPaginatedList`, `SmartPaginatedGrid`, `SmartPaginationBar`) with compact, standard, and expanded modes for Mobile, Tablet, Desktop, and Web.
-* 🌗 **Theme & Dark Mode Ready**: Inherits `Theme.of(context)` without hardcoded color constraints.
-* ♿ **Accessibility Support**: Full semantic labels, screen reader text, keyboard focus states, and touch targets.
+- ♾️ **Infinite Scroll Pagination**
+- 📜 **Scroll Pagination**
+- 🔄 **Load More Pagination**
+- 🌐 **Async/API Pagination**
+- 📄 **Page-based Pagination** (`?page=1&limit=20`)
+- 📊 **Offset Pagination** (`?offset=0&limit=20`)
+- 🎯 **Cursor Pagination** (`?cursor=abc123&limit=20`)
+- 🔍 **Search + Pagination**
+- 🎛️ **Filter + Pagination**
+- ↕️ **Sort + Pagination**
+- 🔃 **Pull-to-Refresh**
+- ⚡ **Prefetch / Load Before Reaching Bottom** (`prefetchDistance: 500`)
+- 🛡️ **Duplicate Request Protection**
+- 🏁 **Last Page Detection**
+- 🧠 **Race Condition Protection** (Out-of-order API response safety)
+- ⏱️ **Search Debouncing** (`searchDebounceDuration`)
+- ❌ **Error + Retry Handling**
+- 💀 **Shimmer Loading** (Zero-dependency built-in shimmer)
+- 📱 **Responsive Mobile / Tablet / Desktop**
+- 🌙 **Light & Dark Theme Support**
+- 📋 **Paginated List** (`SmartPaginatedList`)
+- 🔲 **Paginated Grid** (`SmartPaginatedGrid`)
+- 🎨 **Custom Loading / Error / Empty Builders**
 
 ---
 
-## Installation
+## 📦 Installation
 
 Add `smart_pagination_pro` to your `pubspec.yaml`:
 
@@ -32,7 +47,7 @@ dependencies:
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Beginner-Friendly Simple API
 
@@ -158,7 +173,7 @@ class _AdvancedPatientDirectoryState extends State<AdvancedPatientDirectory> {
 
 ---
 
-## State Management Integration
+## 🏗️ State Management Integration
 
 `smart_pagination_pro` does not enforce BLoC, Provider, Riverpod, or GetX. `SmartPaginationController<T>` extends Flutter's built-in `ChangeNotifier` and implements `ValueListenable<SmartPaginationState<T>>`.
 
@@ -187,7 +202,7 @@ class PatientCubit extends Cubit<SmartPaginationState<Patient>> {
 
 ---
 
-## API Reference
+## 📖 API Reference
 
 ### Core Public Exports
 
@@ -201,6 +216,6 @@ class PatientCubit extends Cubit<SmartPaginationState<Patient>> {
 
 ---
 
-## License
+## 📄 License
 
 MIT License. Free to use in commercial and open-source applications.
