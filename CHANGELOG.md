@@ -1,3 +1,9 @@
+## 1.0.3
+
+* Feature: Enhanced pub.dev documentation featuring high-resolution feature showcase banner.
+* Feature: Added prominent Infinite Scroll, Scroll Pagination, Load More, API Pagination, and responsive List/Grid layout guides.
+* Fix: Responsive horizontal scroll optimization for `SmartPaginationBar` on narrow mobile screens.
+
 ## 1.0.2
 
 * Fix: Update README showcase image URL to absolute GitHub raw URL for 100% pub.dev rendering compatibility.
