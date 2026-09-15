@@ -1,0 +1,7 @@
+.dart_tool/
+build/
+coverage/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
