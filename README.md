@@ -2,7 +2,7 @@
 
 <p align="center">
   <img
-    src="assets/smart_pagination_pro_showcase.png"
+    src="https://raw.githubusercontent.com/ravipatel1999/smart_pagination_pro/main/assets/smart_pagination_pro_showcase.png"
     alt="Smart Pagination Pro - Infinite Scroll, Scroll Pagination and Load More"
     width="100%"
   />
@@ -56,7 +56,7 @@ Add `smart_pagination_pro` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  smart_pagination_pro: ^1.0.0
+  smart_pagination_pro: ^1.0.1
 ```
 
 ---

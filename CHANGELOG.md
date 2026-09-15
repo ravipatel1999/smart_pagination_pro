@@ -1,4 +1,8 @@
-## 1.0.0
+## 1.0.2
+
+* Fix: Update README showcase image URL to absolute GitHub raw URL for 100% pub.dev rendering compatibility.
+
+## 1.0.1
 
 * Initial production release of `smart_pagination_pro`.
 * Feature: Support for Page-based, Offset-based, and Cursor-based pagination strategies.
