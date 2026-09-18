@@ -1,14 +1,9 @@
 name: smart_pagination_pro
-
-description: >
-  Production-ready Flutter pagination package with infinite scroll,
-  scroll pagination, load more, async/API pagination, Page, Offset,
-  and Cursor strategies, search debouncing, filters, sorting,
-  refresh,
-  race-condition protection, shimmer loading, and responsive UI.
-
-version: 1.0.4
-
+description: >-
+  Production-ready Flutter pagination for APIs, lists, grids, infinite scroll,
+  search, filters, sorting, and responsive UIs — with zero dependency on
+  external state-management libraries.
+version: 2.0.0
 homepage: https://github.com/ravipatel1999/smart_pagination_pro
 repository: https://github.com/ravipatel1999/smart_pagination_pro
 issue_tracker: https://github.com/ravipatel1999/smart_pagination_pro/issues

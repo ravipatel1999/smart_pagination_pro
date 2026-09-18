@@ -25,4 +25,5 @@ export 'src/widgets/shimmer/smart_shimmer.dart';
 export 'src/widgets/smart_load_more.dart';
 export 'src/widgets/smart_paginated_grid.dart';
 export 'src/widgets/smart_paginated_list.dart';
+export 'src/widgets/smart_pagination.dart';
 export 'src/widgets/smart_pagination_bar.dart';

@@ -217,6 +217,34 @@ class SmartPaginationController<T> extends ChangeNotifier
   /// Alias for [loadInitial].
   Future<void> loadFirstPage() => loadInitial();
 
+  /// Navigates to a specific target page index and loads its items.
+  Future<void> goToPage(int page) async {
+    if (_isDisposed || page < initialPage) return;
+    if (page == _state.currentPage && !_state.isFailure) return;
+
+    final genToken = _coordinator.nextGeneration();
+    _autoFillCount = 0;
+    _retryAttempts = 0;
+    final targetOffset = (page - initialPage) * _pageSize;
+
+    _updateState(_state.copyWith(
+      status: SmartPaginationStatus.loading,
+      currentPage: page,
+      currentOffset: targetOffset,
+      error: () => null,
+      stackTrace: () => null,
+    ));
+
+    await _executeFetch(
+      page: page,
+      offset: targetOffset,
+      cursor: null,
+      genToken: genToken,
+      isNextPage: false,
+      isRefresh: false,
+    );
+  }
+
   /// Loads the next page of items.
   Future<void> loadNextPage() async {
     if (_isDisposed ||

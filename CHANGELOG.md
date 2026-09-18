@@ -1,7 +1,18 @@
+## 2.0.0
+
+* Feature: Major release introducing Level 1 Simple Pagination API widget (`SmartPagination`) for instant, stateless/state-agnostic pagination with zero setup.
+* Feature: Auto-calculated `totalPages` based on `totalItems` and `pageSize`.
+* Feature: Added First (<<) and Last (>>) page navigation buttons (`showFirstLastButtons`).
+* Feature: Added accessible keyboard shortcut navigation (`enableKeyboardNavigation`).
+* Feature: Enhanced `SmartPaginationThemeData` with `fromTheme` factory constructor and extensive color/style properties.
+* Feature: Added `GlobalPagination` compatibility widget wrapper with `@Deprecated` annotation for smooth migration.
+* Architecture: Unified Level 1 (`SmartPagination`) and Level 2 (`SmartPaginationBar` + `SmartPaginationController<T>`) onto the same internal UI pagination engine.
+* Documentation & Examples: Complete overhaul with generic real-world developer examples (`User`, `Product`, `Order`, `Article`, `Employee`, `Transaction`) and zero domain-specific healthcare terms.
+
 ## 1.0.4
 
 * Feature: Comprehensive State Management Integration guides (Plain Flutter/ChangeNotifier, ValueListenableBuilder, BLoC, Cubit, Provider, Riverpod, GetX).
-* Documentation: Added State Management Comparison Table and Patient Directory integration examples using real controller APIs.
+* Documentation: Added State Management Comparison Table and integration examples using real controller APIs.
 
 ## 1.0.3
 

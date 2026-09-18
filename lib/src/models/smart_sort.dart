@@ -15,6 +15,9 @@ class SmartSort {
   /// Whether sorting should be in descending order. Defaults to `false`.
   final bool descending;
 
+  /// Convenience getter indicating whether sorting is ascending.
+  bool get ascending => !descending;
+
   /// Creates a copy of this [SmartSort] with updated fields.
   SmartSort copyWith({
     String? field,
